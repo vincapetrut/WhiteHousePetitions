@@ -31,6 +31,11 @@ class DetailViewController: UIViewController {
         <html>
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+        :root {
+          color-scheme: light dark;
+        }
+        </style>
         </head>
         <body>
         \(detailedPetition.body)
@@ -38,6 +43,8 @@ class DetailViewController: UIViewController {
         </html>
         """
         
+        webView.isOpaque = false
+        webView.backgroundColor = UIColor.systemBackground
         webView.loadHTMLString(address, baseURL: nil)
     }
 }
