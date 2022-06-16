@@ -8,13 +8,16 @@
 import UIKit
 
 class ViewController: UITableViewController {
-    var petitions = [Petition]()
+    var unfilteredPetitions = [Petition]()
+    var filteredPetitions = [Petition]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         title = "White House Petitions"
         navigationController?.navigationBar.prefersLargeTitles = true
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchPetitions))
         
         let address: String
         if tabBarController?.tabBar.tag == 0 {
@@ -34,26 +37,27 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return petitions.count
+        return filteredPetitions.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.text = petitions[indexPath.row].title
-        cell.detailTextLabel?.text = petitions[indexPath.row].body
+        cell.textLabel?.text = filteredPetitions[indexPath.row].title
+        cell.detailTextLabel?.text = filteredPetitions[indexPath.row].body
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let viewController = DetailViewController()
-        viewController.detailedPetition = petitions[indexPath.row]
+        viewController.detailedPetition = filteredPetitions[indexPath.row]
         navigationController?.pushViewController(viewController, animated: true)
     }
     
     func parseJSON(_ json: Data) {
         let decoder = JSONDecoder()
         if let input = try? decoder.decode(Petitions.self, from: json) {
-            petitions = input.results
+            unfilteredPetitions = input.results
+            filteredPetitions = unfilteredPetitions
             tableView.reloadData()
         }
     }
@@ -62,5 +66,32 @@ class ViewController: UITableViewController {
         let alertController = UIAlertController(title: "Error :(", message: "There is a problem with the URL or Data", preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "Continue", style: .default))
         present(alertController, animated: true)
+    }
+    
+    @objc func searchPetitions() {
+        let alertController = UIAlertController(title: "Which petition do you want to see? :)", message: nil, preferredStyle: .alert)
+        alertController.addTextField()
+        alertController.addAction(UIAlertAction(title: "Search", style: .default) {[weak alertController, weak view] action in
+            if let answer = alertController?.textFields?[0].text {
+                self.filterPetitions(by: answer.lowercased())
+            }
+            
+        })
+        present(alertController, animated: true)
+    }
+    
+    func filterPetitions(by answer: String) {
+        var temporaryPetitions = [Petition]()
+        for petition in unfilteredPetitions {
+            if petition.title.lowercased().contains(answer) || petition.body.lowercased().contains(answer) {
+                temporaryPetitions.append(petition)
+            }
+        }
+        
+        if !temporaryPetitions.isEmpty {
+            filteredPetitions.removeAll()
+            filteredPetitions = temporaryPetitions
+            tableView.reloadSections([0], with: .automatic)
+        }
     }
 }
