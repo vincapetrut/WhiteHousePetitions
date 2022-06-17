@@ -26,6 +26,7 @@ class DetailViewController: UIViewController {
         
         title = detailedPetition.title
         navigationItem.largeTitleDisplayMode = .never
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(sharePetition))
         
         let address = """
         <html>
@@ -46,5 +47,11 @@ class DetailViewController: UIViewController {
         webView.isOpaque = false
         webView.backgroundColor = UIColor.systemBackground
         webView.loadHTMLString(address, baseURL: nil)
+    }
+    
+    @objc func sharePetition() {
+        let ac = UIActivityViewController(activityItems: [detailedPetition?.title], applicationActivities: nil)
+        ac.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
+        present(ac, animated: true)
     }
 }
