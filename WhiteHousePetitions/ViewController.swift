@@ -17,6 +17,7 @@ class ViewController: UITableViewController {
         title = "White House Petitions"
         navigationController?.navigationBar.prefersLargeTitles = true
         
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(reloadPetitions))
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchPetitions))
         
         let address: String
@@ -69,7 +70,7 @@ class ViewController: UITableViewController {
     }
     
     @objc func searchPetitions() {
-        let alertController = UIAlertController(title: "Which petition do you want to see? :)", message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Hello :)", message: "What word are you looking for?", preferredStyle: .alert)
         alertController.addTextField()
         alertController.addAction(UIAlertAction(title: "Search", style: .default) {[weak alertController, weak view] action in
             if let answer = alertController?.textFields?[0].text {
@@ -78,6 +79,13 @@ class ViewController: UITableViewController {
             
         })
         present(alertController, animated: true)
+    }
+    
+    @objc func reloadPetitions() {
+        if filteredPetitions != unfilteredPetitions {
+            filteredPetitions = unfilteredPetitions
+            tableView.reloadSections([0], with: .automatic)
+        }
     }
     
     func filterPetitions(by answer: String) {
